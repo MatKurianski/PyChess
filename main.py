@@ -65,15 +65,18 @@ class Board:
                 line.append(BoardPlace(sprite, i, j))
             self.board_places.append(line)
         for i in range(0, 8):
-            self.board_places[0][i].setPiece(King(PieceColor.BLACK))
+            if i % 2 == 0:
+                self.board_places[0][i].setPiece(King(PieceColor.BLACK))
+            else:
+                self.board_places[0][i].setPiece(Pawn(PieceColor.BLACK))
         
         for i in range(0, 8):
-            self.board_places[7][i].setPiece(King(PieceColor.WHITE))
+            self.board_places[7][i].setPiece(Tower(PieceColor.WHITE))
 
     def draw(self):
         for line in self.board_places:
             for board_place in line:
-                if self.selected == board_place or ((board_place.i, board_place.j) in self.possible_moves and not board_place.hasPiece()):
+                if self.selected == board_place or (board_place.i, board_place.j) in self.possible_moves:
                     board_place.draw_selected()
                 else:
                     board_place.draw()
@@ -87,6 +90,10 @@ class Board:
                 if board_place.collidepoint(x, y) == True:
                     return board_place
         return None
+    
+    def capture_piece(self, piece, board_captured):
+        board_captured.pop_piece()
+        board_captured.setPiece(piece)
 
     def on_board_place_selection(self, x, y):
         selected = self.get_board_place_selected(x, y)
@@ -94,12 +101,15 @@ class Board:
         if selected is not None:
             (i, j) = selected.i, selected.j
             if self.selected is not None:
-                if (i, j) in self.possible_moves and not selected.hasPiece():
-                    new_place = self.board_places[i][j]
+                if (i, j) in self.possible_moves:
                     piece = self.selected.pop_piece()
-                    if isinstance(piece, Pawn) and piece.first_time:
-                        piece.first_time = False
-                    new_place.setPiece(piece)
+                    if not selected.hasPiece():
+                        new_place = self.board_places[i][j]
+                        if isinstance(piece, Pawn) and piece.first_time:
+                            piece.first_time = False
+                        new_place.setPiece(piece)
+                    elif selected.get_piece().color != piece.color:
+                        self.capture_piece(piece, selected)
                 self.clear_selected()
             elif selected.hasPiece():
                 self.selected = selected
@@ -114,8 +124,11 @@ class Board:
                             for move in moves:
                                 (pos_i, pos_j) = move
                                 board_place = self.board_places[pos_i][pos_j]
-                                if (not board_place.hasPiece()) or (board_place.hasPiece() and board_place.get_piece().color != piece.color):
+                                if not board_place.hasPiece():
                                     self.possible_moves.append((pos_i, pos_j))
+                                elif (board_place.get_piece().color != piece.color) and not isinstance(piece, Pawn):
+                                    self.possible_moves.append((pos_i, pos_j))
+                                    break
                                 else:
                                     break
 
