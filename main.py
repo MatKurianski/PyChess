@@ -22,10 +22,8 @@ class BoardPlace:
         sprite_green.fill((0, 255, 0, 35))
         screen.blit(sprite_green, (x, y))
 
-    def get_piece_moves(self):
-        if self.piece is not None:
-            return self.piece.get_moveset(self.i, self.j)
-        return []
+    def get_piece(self):
+        return self.piece
 
     def pop_piece(self):
         old_piece = self.piece
@@ -67,9 +65,10 @@ class Board:
                 line.append(BoardPlace(sprite, i, j))
             self.board_places.append(line)
         for i in range(0, 8):
-            self.board_places[7][i].setPiece(Pawn(PieceColor.BLACK))
+            self.board_places[0][i].setPiece(King(PieceColor.BLACK))
+        
         for i in range(0, 8):
-            self.board_places[0][i].setPiece(Tower(PieceColor.WHITE))
+            self.board_places[7][i].setPiece(King(PieceColor.WHITE))
 
     def draw(self):
         for line in self.board_places:
@@ -82,14 +81,15 @@ class Board:
         self.selected = None
         self.possible_moves.clear()
 
-    def on_board_place_selection(self, x, y):
-        selected = None
-
+    def get_board_place_selected(self, x, y):
         for line in self.board_places:
             for board_place in line:
                 if board_place.collidepoint(x, y) == True:
-                    selected = board_place
-                    break
+                    return board_place
+        return None
+
+    def on_board_place_selection(self, x, y):
+        selected = self.get_board_place_selected(x, y)
         
         if selected is not None:
             (i, j) = selected.i, selected.j
@@ -104,25 +104,20 @@ class Board:
             elif selected.hasPiece():
                 self.selected = selected
                 if self.selected.hasPiece() == True:
-                    possible_moves = self.selected.get_piece_moves()
-                    for moviment, max_value in possible_moves.items():
-                        value = 1
-                        while value <= max_value:
-                            acc = 0
-                            if moviment == 'LEFT' or moviment == 'FORWARD':
-                                acc = -value
-                            else:
-                                acc = value
-                            
-                            if moviment == 'FORWARD' or moviment == 'BACKWARD':
-                                if i+acc > 7 or i+acc < 0 or self.board_places[i+acc][j].hasPiece():
+                    piece = self.selected.get_piece()
+                    moves = piece.get_moveset(i, j)
+
+                    if not piece.hasSpecialMoveset():
+                        for direction, moves in moves.items():
+                            if moves is None:
+                                continue
+                            for move in moves:
+                                (pos_i, pos_j) = move
+                                board_place = self.board_places[pos_i][pos_j]
+                                if (not board_place.hasPiece()) or (board_place.hasPiece() and board_place.get_piece().color != piece.color):
+                                    self.possible_moves.append((pos_i, pos_j))
+                                else:
                                     break
-                                self.possible_moves.append((i+acc, j))
-                            else:
-                                if j+acc > 7 or j+acc < 0 or self.board_places[i][j+acc].hasPiece():
-                                    break
-                                self.possible_moves.append((i, j+acc))
-                            value = value + 1
 
 def main():
     pygame.display.flip()

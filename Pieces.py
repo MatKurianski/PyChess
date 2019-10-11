@@ -39,11 +39,15 @@ class Piece:
         self.color = color
         self.sprite = PieceSprites.BLACK_BISHOP
         self.moveset = {
-            'LEFT': 0,
-            'RIGHT': 0,
-            'FORWARD': 0,
-            'BACKWARD': 0
+            'LEFT': None,
+            'RIGHT': None,
+            'FORWARD': None,
+            'BACKWARD': None
         }
+        self.specialMoveset = None
+    
+    def hasSpecialMoveset(self):
+        return self.specialMoveset is not None
 
     def get_moveset(self):
         return []
@@ -60,12 +64,24 @@ class King(Piece):
         else :
             self.sprite = PieceSprites.WHITE_KING
 
-        self.moveset['LEFT'] = 1
-        self.moveset['RIGHT'] = 1
-        self.moveset['FORWARD'] = 1
-        self.moveset['BACKWARD'] = 1
+        self.moveset['LEFT'] = []
+        self.moveset['RIGHT'] = []
+        self.moveset['FORWARD'] = []
+        self.moveset['BACKWARD'] = []
 
     def get_moveset(self, i, j):
+        for direction in self.moveset:
+            self.moveset[direction].clear()
+
+        if j-1 >= 0:
+            self.moveset['LEFT'].append((i, j-1))
+        if j+1 <= 7:
+            self.moveset['RIGHT'].append((i, j+1))
+        if i-1 >= 0:
+            self.moveset['FORWARD'].append((i-1, j))
+        if i+1 <= 7:
+            self.moveset['BACKWARD'].append((i+1, j))
+
         return self.moveset
 
 class Pawn(Piece):
@@ -75,17 +91,36 @@ class Pawn(Piece):
 
         if self.color == PieceColor.BLACK:
             self.sprite = PieceSprites.BLACK_PAWN
+            self.moveset['BACKWARD'] = []
         else:
             self.sprite = PieceSprites.WHITE_PAWN
+            self.moveset['FORWARD'] = []
 
-        self.moveset['FORWARD'] = 1
     
     def get_moveset(self, i, j):
+        movesets = self.moveset.copy()
+
+        maxSpan = 1
         if self.first_time:
-            moveset = self.moveset.copy()
-            moveset['FORWARD'] = 2
-            return moveset
-        return self.moveset
+            maxSpan = 2
+        
+        for direction, move in movesets.items():
+            if move is None:
+                continue
+            move.clear()
+
+            if direction == 'BACKWARD':
+                for pos_i in range(i+1, i+(maxSpan+1)): 
+                    if pos_i > 7:
+                        break
+                    movesets[direction].append((pos_i, j))
+            elif direction == 'FORWARD':
+                for pos_i in range(i-maxSpan, i):
+                    if pos_i < 0:
+                        continue
+                    movesets[direction].append((pos_i, j))
+
+        return movesets
      
 class Tower(Piece):
     def __init__(self, color):
@@ -99,9 +134,18 @@ class Tower(Piece):
     def get_moveset(self, i, j):
         moveset = self.moveset.copy()
 
-        moveset['LEFT'] = 7
-        moveset['RIGHT'] = 7
-        moveset['FORWARD'] = 7
-        moveset['BACKWARD'] = 7
+        moveset['LEFT'] = []
+        moveset['RIGHT'] = []
+        moveset['FORWARD'] = []
+        moveset['BACKWARD'] = []
+
+        for pos_i in reversed(range(0, i)):
+            moveset['FORWARD'].append((pos_i, j))
+        for pos_i in range(i+1, 8):
+            moveset['BACKWARD'].append((pos_i, j))
+        for pos_j in reversed(range(0, j)):
+            moveset['LEFT'].append((i, pos_j))
+        for pos_j in range(j+1, 8):
+            moveset['RIGHT'].append((i, pos_j))
 
         return moveset
