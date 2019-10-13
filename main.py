@@ -136,6 +136,8 @@ def main():
     pygame.display.flip()
     board = Board()
     running = True
+    clock = pygame.time.Clock()
+
     while running:
         pygame.display.update()
         board.draw()
@@ -146,7 +148,7 @@ def main():
                 (x,y) = pygame.mouse.get_pos()
                 board.on_board_place_selection(x, y)
         pygame.display.flip()
-        pygame.time.wait(0)
+        clock.tick(15)
 
 
 if __name__ == "__main__":
