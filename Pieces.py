@@ -44,10 +44,6 @@ class Piece:
             'FORWARD': None,
             'BACKWARD': None
         }
-        self.specialMoveset = None
-    
-    def hasSpecialMoveset(self):
-        return self.specialMoveset is not None
 
     def get_moveset(self):
         return []

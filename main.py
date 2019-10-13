@@ -2,6 +2,7 @@ import pygame
 from Pieces import *
 from Constants import *
 
+pygame.init() # now use display and fonts
 pygame.mixer.quit()
 
 class BoardPlace:
@@ -15,13 +16,6 @@ class BoardPlace:
         x, y = width//8*j, height//8*i
         self.rect.move_ip(x, y)
 
-    def draw_selected(self):
-        self.draw()
-        x, y = self.rect.left, self.rect.top
-        sprite_green = self.sprite.copy()
-        sprite_green.fill((0, 255, 0, 35))
-        screen.blit(sprite_green, self.rect)
-
     def get_piece(self):
         return self.piece
 
@@ -29,6 +23,13 @@ class BoardPlace:
         old_piece = self.piece
         self.piece = None
         return old_piece
+
+    def draw_selected(self):
+        self.draw()
+        x, y = self.rect.left, self.rect.top
+        sprite_green = self.sprite.copy()
+        sprite_green.fill((0, 255, 0, 35))
+        screen.blit(sprite_green, self.rect)
 
     def draw(self):
         x, y = self.rect.left, self.rect.top
@@ -52,6 +53,10 @@ class Board:
         self.selected = None
         self.possible_moves = []
         self.current_turn = PieceColor.WHITE
+        self.piece_list = {
+            PieceColor.BLACK: [],
+            PieceColor.WHITE: []
+        }
 
         for i in range(0, 8):
             line = []
@@ -66,19 +71,19 @@ class Board:
                 line.append(BoardPlace(sprite, i, j))
             self.board_places.append(line)
         for i in range(0, 8):
-            if i % 2 == 0:
-                self.board_places[0][i].setPiece(King(PieceColor.BLACK))
-            else:
-                self.board_places[0][i].setPiece(Pawn(PieceColor.BLACK))
-        
+            self.add_piece(7, i, Pawn(PieceColor.WHITE))
         for i in range(0, 8):
-            self.board_places[7][i].setPiece(Tower(PieceColor.WHITE))
+            self.add_piece(0, i, Pawn(PieceColor.BLACK))
     
     def toggle_turn(self):
         if self.current_turn == PieceColor.WHITE:
             self.current_turn = PieceColor.BLACK
         else:
             self.current_turn = PieceColor.WHITE
+    
+    def add_piece(self, i, j, piece):
+        self.board_places[i][j].setPiece(piece)
+        self.piece_list[piece.color].append(piece)
 
     def draw(self):
         for line in self.board_places:
@@ -99,8 +104,41 @@ class Board:
         return None
     
     def capture_piece(self, piece, board_captured):
-        board_captured.pop_piece()
+        captured_piece = board_captured.pop_piece()
         board_captured.setPiece(piece)
+        self.piece_list[captured_piece.color].remove(captured_piece)
+
+    def validate_moves(self, piece, i, j):
+        moves = piece.get_moveset(i, j)
+
+        if True:
+            for direction, moves in moves.items():
+                if moves is None:
+                    continue
+                for move in moves:
+                    (pos_i, pos_j) = move
+                    board_place = self.board_places[pos_i][pos_j]
+                    if not board_place.hasPiece():
+                        self.possible_moves.append((pos_i, pos_j))
+                    elif (board_place.get_piece().color != piece.color) and not isinstance(piece, Pawn):
+                        self.possible_moves.append((pos_i, pos_j))
+                        break
+                    else:
+                        break
+
+            if isinstance(piece, Pawn):
+                if piece.color == PieceColor.BLACK:
+                    span = 1
+                else:
+                    span = -1
+                
+                pos_i = i+span
+                if pos_i >= 0 and pos_i <= 7:
+                    for pos_inc in [1, -1]:
+                        pos_j = j+pos_inc
+                        if pos_j >= 0 and pos_j <= 7 and self.board_places[pos_i][pos_j].hasPiece() and self.board_places[pos_i][pos_j].get_piece().color != piece.color:
+                            self.possible_moves.append((pos_i, pos_j))
+
 
     def on_board_place_selection(self, x, y):
         selected = self.get_board_place_selected(x, y)
@@ -123,22 +161,7 @@ class Board:
                 self.selected = selected
                 if self.selected.hasPiece() == True:
                     piece = self.selected.get_piece()
-                    moves = piece.get_moveset(i, j)
-
-                    if not piece.hasSpecialMoveset():
-                        for direction, moves in moves.items():
-                            if moves is None:
-                                continue
-                            for move in moves:
-                                (pos_i, pos_j) = move
-                                board_place = self.board_places[pos_i][pos_j]
-                                if not board_place.hasPiece():
-                                    self.possible_moves.append((pos_i, pos_j))
-                                elif (board_place.get_piece().color != piece.color) and not isinstance(piece, Pawn):
-                                    self.possible_moves.append((pos_i, pos_j))
-                                    break
-                                else:
-                                    break
+                    self.validate_moves(piece, i, j)
 
 def main():
     pygame.display.flip()
