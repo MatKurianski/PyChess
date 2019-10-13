@@ -20,7 +20,7 @@ class BoardPlace:
         x, y = self.rect.left, self.rect.top
         sprite_green = self.sprite.copy()
         sprite_green.fill((0, 255, 0, 35))
-        screen.blit(sprite_green, (x, y))
+        screen.blit(sprite_green, self.rect)
 
     def get_piece(self):
         return self.piece
@@ -51,6 +51,7 @@ class Board:
         self.board_places = []
         self.selected = None
         self.possible_moves = []
+        self.current_turn = PieceColor.WHITE
 
         for i in range(0, 8):
             line = []
@@ -72,6 +73,12 @@ class Board:
         
         for i in range(0, 8):
             self.board_places[7][i].setPiece(Tower(PieceColor.WHITE))
+    
+    def toggle_turn(self):
+        if self.current_turn == PieceColor.WHITE:
+            self.current_turn = PieceColor.BLACK
+        else:
+            self.current_turn = PieceColor.WHITE
 
     def draw(self):
         for line in self.board_places:
@@ -110,8 +117,9 @@ class Board:
                         new_place.setPiece(piece)
                     elif selected.get_piece().color != piece.color:
                         self.capture_piece(piece, selected)
+                    self.toggle_turn()
                 self.clear_selected()
-            elif selected.hasPiece():
+            elif selected.hasPiece() and self.current_turn == selected.piece.color:
                 self.selected = selected
                 if self.selected.hasPiece() == True:
                     piece = self.selected.get_piece()
