@@ -42,14 +42,92 @@ class Piece:
             'LEFT': None,
             'RIGHT': None,
             'FORWARD': None,
-            'BACKWARD': None
+            'BACKWARD': None,
+            'DIAGONALTL': None,
+            'DIAGONALBL': None,
+            'DIAGONALTR': None,
+            'DIAGONALBR': None
         }
 
-    def get_moveset(self):
+    def get_moveset(self, i, j):
         return []
 
     def draw(self, x, y):
         screen.blit(self.sprite, (x+PieceSprites.piece_size//2, y+PieceSprites.piece_size//2))
+
+class Queen(Piece):
+    def __init__(self, color):
+        if color == PieceColor.BLACK:
+            self.sprite = PieceSprites.BLACK_QUEEN
+            self.color = PieceColor.BLACK
+        else :
+            self.sprite = PieceSprites.WHITE_QUEEN
+            self.color = PieceColor.WHITE
+        
+    def get_moveset(self, i, j):
+        tower = Tower(self.color)
+        bishop = Bishop(self.color)
+
+        tower_moveset = tower.get_moveset(i, j)
+        bishop_moveset = bishop.get_moveset(i, j)
+
+        self.moveset = {
+            'LEFT': [],
+            'RIGHT': [],
+            'FORWARD': [],
+            'BACKWARD': [],
+            'DIAGONALTL': [],
+            'DIAGONALBL': [],
+            'DIAGONALTR': [],
+            'DIAGONALBR': []
+        }
+
+        for direction, moves in tower_moveset.items():
+            self.moveset[direction] = moves
+
+        for direction, moves in bishop_moveset.items():
+            self.moveset[direction] = moves
+        
+        return self.moveset
+
+
+class Bishop(Piece):
+    def __init__(self, color):
+        if color == PieceColor.BLACK:
+            self.sprite = PieceSprites.BLACK_BISHOP
+            self.color = PieceColor.BLACK
+        else :
+            self.sprite = PieceSprites.WHITE_BISHOP
+            self.color = PieceColor.WHITE
+
+    def get_moveset(self, i, j):
+        self.moveset = {
+            'DIAGONALTL': [],
+            'DIAGONALBL': [],
+            'DIAGONALTR': [],
+            'DIAGONALBR': []
+        }
+
+        directions_spawn = {
+            'DIAGONALTL': (-1, -1),
+            'DIAGONALBL': (1, -1),
+            'DIAGONALTR': (-1, 1),
+            'DIAGONALBR': (1, 1)
+        }
+        
+        for direction_keys, direction in directions_spawn.items():
+            pos_i = i
+            pos_j = j
+
+            while True:
+                pos_i += direction[0]
+                pos_j += direction[1]
+
+                if (pos_i >= 0 and pos_i <= 7) and (pos_j >= 0 and pos_j <= 7):
+                    self.moveset[direction_keys].append((pos_i, pos_j))
+                else:
+                    break
+        return self.moveset
 
 class King(Piece):
     def __init__(self, color):
@@ -57,8 +135,10 @@ class King(Piece):
 
         if self.color == PieceColor.BLACK:
             self.sprite = PieceSprites.BLACK_KING
+            self.color = PieceColor.BLACK
         else :
             self.sprite = PieceSprites.WHITE_KING
+            self.color = PieceColor.WHITE
 
         self.moveset['LEFT'] = []
         self.moveset['RIGHT'] = []

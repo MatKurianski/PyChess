@@ -71,9 +71,9 @@ class Board:
                 line.append(BoardPlace(sprite, i, j))
             self.board_places.append(line)
         for i in range(0, 8):
-            self.add_piece(7, i, Pawn(PieceColor.WHITE))
+            self.add_piece(7, i, Bishop(PieceColor.WHITE))
         for i in range(0, 8):
-            self.add_piece(0, i, Pawn(PieceColor.BLACK))
+            self.add_piece(0, i, Queen(PieceColor.BLACK))
     
     def toggle_turn(self):
         if self.current_turn == PieceColor.WHITE:
