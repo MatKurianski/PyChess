@@ -37,7 +37,6 @@ class PieceColor(Enum):
 class Piece:
     def __init__(self, color):
         self.color = color
-        self.sprite = PieceSprites.BLACK_BISHOP
         self.moveset = {
             'LEFT': None,
             'RIGHT': None,
@@ -57,12 +56,11 @@ class Piece:
 
 class Queen(Piece):
     def __init__(self, color):
-        if color == PieceColor.BLACK:
+        super().__init__(color)
+        if self.color == PieceColor.BLACK:
             self.sprite = PieceSprites.BLACK_QUEEN
-            self.color = PieceColor.BLACK
         else :
             self.sprite = PieceSprites.WHITE_QUEEN
-            self.color = PieceColor.WHITE
         
     def get_moveset(self, i, j):
         tower = Tower(self.color)
@@ -93,12 +91,11 @@ class Queen(Piece):
 
 class Bishop(Piece):
     def __init__(self, color):
-        if color == PieceColor.BLACK:
+        super().__init__(color)
+        if self.color == PieceColor.BLACK:
             self.sprite = PieceSprites.BLACK_BISHOP
-            self.color = PieceColor.BLACK
         else :
             self.sprite = PieceSprites.WHITE_BISHOP
-            self.color = PieceColor.WHITE
 
     def get_moveset(self, i, j):
         self.moveset = {
@@ -135,17 +132,24 @@ class King(Piece):
 
         if self.color == PieceColor.BLACK:
             self.sprite = PieceSprites.BLACK_KING
-            self.color = PieceColor.BLACK
         else :
             self.sprite = PieceSprites.WHITE_KING
-            self.color = PieceColor.WHITE
 
-        self.moveset['LEFT'] = []
-        self.moveset['RIGHT'] = []
-        self.moveset['FORWARD'] = []
-        self.moveset['BACKWARD'] = []
+        self.moveset = {
+            'LEFT': [],
+            'RIGHT': [],
+            'FORWARD': [],
+            'BACKWARD': []    
+        }
 
     def get_moveset(self, i, j):
+        self.moveset = {
+            'LEFT': [],
+            'RIGHT': [],
+            'FORWARD': [],
+            'BACKWARD': []    
+        }
+        
         for direction in self.moveset:
             self.moveset[direction].clear()
 
@@ -212,20 +216,20 @@ class Tower(Piece):
             self.sprite = PieceSprites.WHITE_ROOK
 
     def get_moveset(self, i, j):
-        moveset = self.moveset.copy()
-
-        moveset['LEFT'] = []
-        moveset['RIGHT'] = []
-        moveset['FORWARD'] = []
-        moveset['BACKWARD'] = []
+        self.moveset = {
+            'LEFT': [],
+            'RIGHT': [],
+            'FORWARD': [],
+            'BACKWARD': []
+        }
 
         for pos_i in reversed(range(0, i)):
-            moveset['FORWARD'].append((pos_i, j))
+            self.moveset['FORWARD'].append((pos_i, j))
         for pos_i in range(i+1, 8):
-            moveset['BACKWARD'].append((pos_i, j))
+            self.moveset['BACKWARD'].append((pos_i, j))
         for pos_j in reversed(range(0, j)):
-            moveset['LEFT'].append((i, pos_j))
+            self.moveset['LEFT'].append((i, pos_j))
         for pos_j in range(j+1, 8):
-            moveset['RIGHT'].append((i, pos_j))
+            self.moveset['RIGHT'].append((i, pos_j))
 
-        return moveset
+        return self.moveset
