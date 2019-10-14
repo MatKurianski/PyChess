@@ -51,6 +51,9 @@ class Piece:
     def get_moveset(self, i, j):
         return []
 
+    def get_cached_moveset(self):
+        return self.moveset
+
     def draw(self, x, y):
         screen.blit(self.sprite, (x+PieceSprites.piece_size//2, y+PieceSprites.piece_size//2))
 
@@ -139,7 +142,11 @@ class King(Piece):
             'LEFT': [],
             'RIGHT': [],
             'FORWARD': [],
-            'BACKWARD': []    
+            'BACKWARD': [],
+            'DIAGONALTL': [],
+            'DIAGONALBL': [],
+            'DIAGONALTR': [],
+            'DIAGONALBR': []   
         }
 
     def get_moveset(self, i, j):
@@ -147,20 +154,36 @@ class King(Piece):
             'LEFT': [],
             'RIGHT': [],
             'FORWARD': [],
-            'BACKWARD': []    
+            'BACKWARD': [],
+            'DIAGONALTL': [],
+            'DIAGONALBL': [],
+            'DIAGONALTR': [],
+            'DIAGONALBR': []
         }
-        
-        for direction in self.moveset:
-            self.moveset[direction].clear()
 
-        if j-1 >= 0:
-            self.moveset['LEFT'].append((i, j-1))
-        if j+1 <= 7:
-            self.moveset['RIGHT'].append((i, j+1))
-        if i-1 >= 0:
-            self.moveset['FORWARD'].append((i-1, j))
-        if i+1 <= 7:
-            self.moveset['BACKWARD'].append((i+1, j))
+        top = i - 1
+        back = i + 1
+        left = j - 1
+        right = j + 1
+
+        if left >= 0:
+            self.moveset['LEFT'].append((i, left))
+            if top >= 0:
+                self.moveset['DIAGONALTL'].append((top, left))
+            if back <= 7:
+                self.moveset['DIAGONALBL'].append((back, left))
+        if right <= 7:
+            self.moveset['RIGHT'].append((i, right))
+            if top >= 0:
+                self.moveset['DIAGONALTR'].append((top, right))
+            if back <= 7:
+                self.moveset['DIAGONALBR'].append((back, right))
+        if top >= 0:
+            self.moveset['FORWARD'].append((top, j))
+        if back <= 7:
+            self.moveset['BACKWARD'].append((back, j))
+
+        print(self.moveset)
 
         return self.moveset
 
@@ -203,7 +226,6 @@ class Pawn(Piece):
                     if pos_i >= 0 and pos_i <= 7:
                         self.moveset[direction].append((pos_i, j))
         
-        print(self.moveset)
         return self.moveset
      
 class Tower(Piece):

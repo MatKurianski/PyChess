@@ -70,15 +70,25 @@ class Board:
 
                 line.append(BoardPlace(sprite, i, j))
             self.board_places.append(line)
+
         for i in range(0, 8):
-            self.add_piece(7, i, Pawn(PieceColor.WHITE))
+            self.add_piece(6, i, Pawn(PieceColor.WHITE))
         for i in range(0, 8):
-            self.add_piece(0, i, Pawn(PieceColor.BLACK))
+            self.add_piece(1, i, Pawn(PieceColor.BLACK))
         
-        self.add_piece(1, 2, Bishop(PieceColor.BLACK))
-        self.add_piece(1, 5, Tower(PieceColor.BLACK))
-        self.add_piece(1, 3, King(PieceColor.WHITE))
-        self.add_piece(1, 6, Queen(PieceColor.WHITE))
+        self.add_piece(0, 0, Tower(PieceColor.BLACK))
+        self.add_piece(0, 2, Bishop(PieceColor.BLACK))
+        self.add_piece(0, 3, Queen(PieceColor.BLACK))
+        self.add_piece(0, 4, King(PieceColor.BLACK))
+        self.add_piece(0, 5, Bishop(PieceColor.BLACK))
+        self.add_piece(0, 7, Tower(PieceColor.BLACK))
+
+        self.add_piece(7, 0, Tower(PieceColor.WHITE))
+        self.add_piece(7, 2, Bishop(PieceColor.WHITE))
+        self.add_piece(7, 3, Queen(PieceColor.WHITE))
+        self.add_piece(7, 4, King(PieceColor.WHITE))
+        self.add_piece(7, 5, Bishop(PieceColor.WHITE))
+        self.add_piece(7, 7, Tower(PieceColor.WHITE))
     
     def toggle_turn(self):
         if self.current_turn == PieceColor.WHITE:
@@ -89,6 +99,7 @@ class Board:
     def add_piece(self, i, j, piece):
         self.board_places[i][j].setPiece(piece)
         self.piece_list[piece.color].append(piece)
+        piece.get_moveset(i, j) # set cache moveset
 
     def draw(self):
         for line in self.board_places:
