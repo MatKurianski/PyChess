@@ -77,17 +77,21 @@ class Board:
             self.add_piece(1, i, Pawn(PieceColor.BLACK))
         
         self.add_piece(0, 0, Tower(PieceColor.BLACK))
+        self.add_piece(0, 1, Knight(PieceColor.BLACK))
         self.add_piece(0, 2, Bishop(PieceColor.BLACK))
         self.add_piece(0, 3, Queen(PieceColor.BLACK))
         self.add_piece(0, 4, King(PieceColor.BLACK))
         self.add_piece(0, 5, Bishop(PieceColor.BLACK))
+        self.add_piece(0, 6, Knight(PieceColor.BLACK))
         self.add_piece(0, 7, Tower(PieceColor.BLACK))
 
         self.add_piece(7, 0, Tower(PieceColor.WHITE))
+        self.add_piece(7, 1, Knight(PieceColor.WHITE))
         self.add_piece(7, 2, Bishop(PieceColor.WHITE))
         self.add_piece(7, 3, Queen(PieceColor.WHITE))
         self.add_piece(7, 4, King(PieceColor.WHITE))
         self.add_piece(7, 5, Bishop(PieceColor.WHITE))
+        self.add_piece(7, 6, Knight(PieceColor.WHITE))
         self.add_piece(7, 7, Tower(PieceColor.WHITE))
     
     def toggle_turn(self):
@@ -127,7 +131,7 @@ class Board:
     def validate_moves(self, piece, i, j):
         moves = piece.get_moveset(i, j)
 
-        if True:
+        if not isinstance(piece, Knight):
             for direction, moves in moves.items():
                 if moves is None:
                     continue
@@ -154,6 +158,13 @@ class Board:
                         pos_j = j+pos_inc
                         if pos_j >= 0 and pos_j <= 7 and self.board_places[pos_i][pos_j].hasPiece() and self.board_places[pos_i][pos_j].get_piece().color != piece.color:
                             self.possible_moves.append((pos_i, pos_j))
+        else:
+            for move in moves:
+                (i, j) = move
+                board_place = self.board_places[i][j]
+                if (not board_place.hasPiece()) or (board_place.hasPiece() and board_place.get_piece().color != piece.color):
+                    self.possible_moves.append((i, j))
+                
 
 
     def on_board_place_selection(self, x, y):

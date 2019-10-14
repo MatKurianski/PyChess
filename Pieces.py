@@ -57,6 +57,38 @@ class Piece:
     def draw(self, x, y):
         screen.blit(self.sprite, (x+PieceSprites.piece_size//2, y+PieceSprites.piece_size//2))
 
+class Knight(Piece):
+    def __init__(self, color):
+        super().__init__(color)
+
+        if self.color == PieceColor.BLACK:
+            self.sprite = PieceSprites.BLACK_KNIGHT
+        else :
+            self.sprite = PieceSprites.WHITE_KNIGHT
+        
+        self.moveset = []
+
+    def get_moveset(self, i, j):
+        self.moveset = []
+
+        for move in [
+            (1, 2),
+            (-1, 2),
+            (1, -2),
+            (-1, -2),
+            (2, 1),
+            (-2, 1),
+            (2, -1),
+            (-2, -1)
+        ]:
+            pos_i = i + move[0]
+            pos_j = j + move[1]
+
+            if (pos_i >= 0 and pos_i <= 7) and (pos_j >= 0 and pos_j <= 7):
+                self.moveset.append((pos_i, pos_j))
+
+        return self.moveset
+
 class Queen(Piece):
     def __init__(self, color):
         super().__init__(color)
@@ -182,8 +214,6 @@ class King(Piece):
             self.moveset['FORWARD'].append((top, j))
         if back <= 7:
             self.moveset['BACKWARD'].append((back, j))
-
-        print(self.moveset)
 
         return self.moveset
 
